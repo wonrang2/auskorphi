@@ -2,6 +2,8 @@ node_modules/
 server/node_modules/
 client/node_modules/
 server/auskorphi.db
+server/auskorphi.db-shm
+server/auskorphi.db-wal
 server/.env
 dist/
 client/dist/
