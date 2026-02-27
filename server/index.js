@@ -1,0 +1,42 @@
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+
+const exchangeRateRouter = require('./routes/exchangeRate');
+const productsRouter = require('./routes/products');
+const batchesRouter = require('./routes/batches');
+const salesRouter = require('./routes/sales');
+const inventoryRouter = require('./routes/inventory');
+const reportsRouter = require('./routes/reports');
+const errorHandler = require('./middleware/errorHandler');
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+const IS_PROD = process.env.NODE_ENV === 'production';
+
+// In dev, the Vite proxy handles CORS. In prod, same origin — no CORS needed.
+if (!IS_PROD) app.use(cors());
+app.use(express.json());
+
+app.use('/api/exchange-rate', exchangeRateRouter);
+app.use('/api/products', productsRouter);
+app.use('/api/batches', batchesRouter);
+app.use('/api/sales', salesRouter);
+app.use('/api/inventory', inventoryRouter);
+app.use('/api/reports', reportsRouter);
+
+// Serve built React app in production
+if (IS_PROD) {
+  const clientDist = path.join(__dirname, '../client/dist');
+  app.use(express.static(clientDist));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(clientDist, 'index.html'));
+  });
+}
+
+app.use(errorHandler);
+
+app.listen(PORT, () => {
+  console.log(`Auskorphi server running on http://localhost:${PORT} [${IS_PROD ? 'production' : 'development'}]`);
+});
