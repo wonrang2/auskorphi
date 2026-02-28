@@ -73,6 +73,20 @@ export default function Sidebar({ onClose }) {
               <span className="text-base leading-none">👥</span>
               Users
             </NavLink>
+            <NavLink
+              to="/import"
+              onClick={onClose}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                }`
+              }
+            >
+              <span className="text-base leading-none">📥</span>
+              Import
+            </NavLink>
           </>
         )}
       </nav>

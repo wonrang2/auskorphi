@@ -9,6 +9,7 @@ import Sales from './pages/Sales.jsx';
 import Inventory from './pages/Inventory.jsx';
 import Reports from './pages/Reports.jsx';
 import Users from './pages/Users.jsx';
+import Import from './pages/Import.jsx';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -52,6 +53,14 @@ function AppRoutes() {
           element={
             <AdminRoute>
               <Users />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="import"
+          element={
+            <AdminRoute>
+              <Import />
             </AdminRoute>
           }
         />
