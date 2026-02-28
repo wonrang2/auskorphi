@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 
 const authRouter = require('./routes/auth');
+const usersRouter = require('./routes/users');
 const exchangeRateRouter = require('./routes/exchangeRate');
 const productsRouter = require('./routes/products');
 const batchesRouter = require('./routes/batches');
@@ -26,6 +27,7 @@ app.use('/api/auth', authRouter);
 
 // All other API routes require a valid JWT
 app.use('/api', authMiddleware);
+app.use('/api/users', usersRouter);
 app.use('/api/exchange-rate', exchangeRateRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/batches', batchesRouter);

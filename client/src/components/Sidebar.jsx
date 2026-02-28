@@ -12,6 +12,7 @@ const links = [
 
 export default function Sidebar({ onClose }) {
   const { user, logout } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   return (
     <aside className="w-56 h-full bg-gray-900 text-white flex flex-col">
@@ -52,6 +53,28 @@ export default function Sidebar({ onClose }) {
             {label}
           </NavLink>
         ))}
+
+        {isAdmin && (
+          <>
+            <div className="pt-3 pb-1 px-3">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Admin</p>
+            </div>
+            <NavLink
+              to="/users"
+              onClick={onClose}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                }`
+              }
+            >
+              <span className="text-base leading-none">👥</span>
+              Users
+            </NavLink>
+          </>
+        )}
       </nav>
 
       <div className="px-5 py-4 border-t border-gray-700 space-y-2">
