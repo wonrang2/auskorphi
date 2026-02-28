@@ -37,26 +37,26 @@ export default function Reports() {
   useEffect(() => { load(); }, [load]);
 
   const byProductColumns = [
-    { key: 'sku',          label: 'SKU',      render: r => <span className="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded">{r.sku}</span> },
+    { key: 'sku',          label: 'SKU',      mobileHide: true, render: r => <span className="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded">{r.sku}</span> },
     { key: 'product_name', label: 'Product',  render: r => <span className="font-medium">{r.product_name}</span> },
-    { key: 'units_sold',   label: 'Units Sold' },
+    { key: 'units_sold',   label: 'Units',    render: r => r.units_sold },
     { key: 'revenue',      label: 'Revenue',  render: r => `₱${fmt(r.revenue)}` },
-    { key: 'cogs',         label: 'COGS',     render: r => `₱${fmt(r.cogs)}` },
-    { key: 'gross_profit', label: 'Gross Profit', render: r => (
+    { key: 'cogs',         label: 'COGS',     mobileHide: true, render: r => `₱${fmt(r.cogs)}` },
+    { key: 'gross_profit', label: 'Gross',    mobileHide: true, render: r => (
         <span className={r.gross_profit >= 0 ? 'text-green-700 font-medium' : 'text-red-600 font-medium'}>
           ₱{fmt(r.gross_profit)}
         </span>
       )
     },
-    { key: 'delivery_costs', label: 'Delivery', render: r => `₱${fmt(r.delivery_costs)}` },
+    { key: 'delivery_costs', label: 'Delivery', mobileHide: true, render: r => `₱${fmt(r.delivery_costs)}` },
     { key: 'net_profit', label: 'Net Profit', render: r => (
         <span className={r.net_profit >= 0 ? 'text-green-700 font-bold' : 'text-red-600 font-bold'}>
           ₱{fmt(r.net_profit)}
         </span>
       )
     },
-    { key: 'gross_margin_pct', label: 'Gross Margin', render: r => `${r.gross_margin_pct.toFixed(1)}%` },
-    { key: 'net_margin_pct',   label: 'Net Margin',   render: r => (
+    { key: 'gross_margin_pct', label: 'Gross%', mobileHide: true, render: r => `${r.gross_margin_pct.toFixed(1)}%` },
+    { key: 'net_margin_pct',   label: 'Net%',   render: r => (
         <span className={r.net_margin_pct >= 0 ? 'text-green-700 font-semibold' : 'text-red-600 font-semibold'}>
           {r.net_margin_pct.toFixed(1)}%
         </span>
@@ -72,7 +72,7 @@ export default function Reports() {
       </div>
 
       {/* Date range filter */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <span className="text-sm text-gray-600 font-medium">Date range:</span>
         <input type="date" className="input w-40" value={from} onChange={e => setFrom(e.target.value)} />
         <span className="text-gray-400 text-sm">to</span>
@@ -133,7 +133,7 @@ export default function Reports() {
               <p className="text-xl font-bold text-gray-900">₱{fmt(pnl.total_delivery_costs)}</p>
             </div>
             <div className="card text-center py-3">
-              <p className="text-xs text-gray-500 font-semibold uppercase">Avg Revenue / Sale</p>
+              <p className="text-xs text-gray-500 font-semibold uppercase">Avg / Sale</p>
               <p className="text-xl font-bold text-gray-900">
                 {pnl.total_sales > 0 ? `₱${fmt(pnl.total_revenue / pnl.total_sales)}` : '—'}
               </p>

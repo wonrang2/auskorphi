@@ -90,8 +90,8 @@ export default function Products() {
   const columns = [
     { key: 'sku',           label: 'SKU',      render: r => <span className="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded">{r.sku}</span> },
     { key: 'name',          label: 'Name',     render: r => <span className="font-medium">{r.name}</span> },
-    { key: 'category',      label: 'Category', render: r => r.category || <span className="text-gray-400">—</span> },
-    { key: 'unit',          label: 'Unit',     render: r => <Badge label={r.unit} variant="blue" /> },
+    { key: 'category',      label: 'Category', mobileHide: true, render: r => r.category || <span className="text-gray-400">—</span> },
+    { key: 'unit',          label: 'Unit',     mobileHide: true, render: r => <Badge label={r.unit} variant="blue" /> },
     { key: 'stock_on_hand', label: 'Stock',    render: r => (
         <Badge
           label={`${r.stock_on_hand} in stock`}
@@ -110,12 +110,12 @@ export default function Products() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Products</h1>
           <p className="text-sm text-gray-500 mt-1">Manage your product catalogue</p>
         </div>
-        <button onClick={openAdd} className="btn-primary">+ Add Product</button>
+        <button onClick={openAdd} className="btn-primary shrink-0">+ Add Product</button>
       </div>
 
       {error && <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{error}</div>}
@@ -129,7 +129,7 @@ export default function Products() {
       {modal === 'edit' && (
         <Modal title={editing ? 'Edit Product' : 'Add Product'} onClose={closeModal}>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField label="SKU *" error={!form.sku.trim() && formError ? 'Required' : ''}>
                 <input
                   className="input"

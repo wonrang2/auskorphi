@@ -125,14 +125,14 @@ export default function Sales() {
     { key: 'product_name',  label: 'Product', render: r => (
         <div>
           <div className="font-medium">{r.product_name}</div>
-          <div className="text-xs text-gray-400 font-mono">{r.sku}</div>
+          <div className="text-xs text-gray-400 font-mono hidden sm:block">{r.sku}</div>
         </div>
       )
     },
-    { key: 'quantity_sold', label: 'Qty',     render: r => `${r.quantity_sold}x @ ₱${fmt(r.sale_price_php)}` },
-    { key: 'revenue',       label: 'Revenue', render: r => <span className="font-medium">₱{fmt(r.revenue)}</span> },
-    { key: 'cogs',          label: 'COGS',    render: r => <span className="text-gray-600">₱{fmt(r.cogs)}</span> },
-    { key: 'gross_profit',  label: 'Gross',   render: r => (
+    { key: 'quantity_sold', label: 'Qty',     mobileHide: true, render: r => `${r.quantity_sold}x @ ₱${fmt(r.sale_price_php)}` },
+    { key: 'revenue',       label: 'Revenue', mobileHide: true, render: r => <span className="font-medium">₱{fmt(r.revenue)}</span> },
+    { key: 'cogs',          label: 'COGS',    mobileHide: true, render: r => <span className="text-gray-600">₱{fmt(r.cogs)}</span> },
+    { key: 'gross_profit',  label: 'Gross',   mobileHide: true, render: r => (
         <span className={r.gross_profit >= 0 ? 'text-green-700 font-medium' : 'text-red-600 font-medium'}>
           ₱{fmt(r.gross_profit)}
         </span>
@@ -144,7 +144,7 @@ export default function Sales() {
         </span>
       )
     },
-    { key: 'margin', label: 'Margin', render: r => (
+    { key: 'margin', label: 'Margin', mobileHide: true, render: r => (
         r.revenue > 0
           ? <Badge
               label={`${((r.net_profit / r.revenue) * 100).toFixed(1)}%`}
@@ -161,12 +161,12 @@ export default function Sales() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Sales</h1>
           <p className="text-sm text-gray-500 mt-1">Record sales and track profit per transaction</p>
         </div>
-        <button onClick={openAdd} className="btn-primary">+ Record Sale</button>
+        <button onClick={openAdd} className="btn-primary shrink-0">+ Record Sale</button>
       </div>
 
       {/* Summary bar */}
@@ -190,14 +190,16 @@ export default function Sales() {
       )}
 
       {/* Filters */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <select className="input w-48" value={filterProduct} onChange={e => setFilterProduct(e.target.value)}>
+      <div className="flex flex-wrap items-center gap-3">
+        <select className="input w-full sm:w-48" value={filterProduct} onChange={e => setFilterProduct(e.target.value)}>
           <option value="">All products</option>
           {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
-        <input type="date" className="input w-40" value={filterFrom} onChange={e => setFilterFrom(e.target.value)} />
-        <span className="text-gray-400 text-sm">to</span>
-        <input type="date" className="input w-40" value={filterTo} onChange={e => setFilterTo(e.target.value)} />
+        <div className="flex items-center gap-2 flex-wrap">
+          <input type="date" className="input w-40" value={filterFrom} onChange={e => setFilterFrom(e.target.value)} />
+          <span className="text-gray-400 text-sm">to</span>
+          <input type="date" className="input w-40" value={filterTo} onChange={e => setFilterTo(e.target.value)} />
+        </div>
         {(filterProduct || filterFrom || filterTo) && (
           <button className="btn-secondary text-xs" onClick={() => { setFilterProduct(''); setFilterFrom(''); setFilterTo(''); }}>
             Clear filters
@@ -216,7 +218,7 @@ export default function Sales() {
       {modal && (
         <Modal title="Record Sale" onClose={closeModal} size="lg">
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField label="Product *">
                 <select
                   className="input"
@@ -252,7 +254,7 @@ export default function Sales() {
               </div>
             )}
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <FormField label="Quantity *">
                 <input
                   type="number" min="1" className="input"

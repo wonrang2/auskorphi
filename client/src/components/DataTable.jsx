@@ -7,7 +7,9 @@ export default function DataTable({ columns, rows, emptyMessage = 'No data' }) {
             {columns.map(col => (
               <th
                 key={col.key}
-                className={`px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide whitespace-nowrap ${col.className || ''}`}
+                className={`px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide whitespace-nowrap ${
+                  col.mobileHide ? 'hidden md:table-cell' : ''
+                } ${col.className || ''}`}
               >
                 {col.label}
               </th>
@@ -25,7 +27,12 @@ export default function DataTable({ columns, rows, emptyMessage = 'No data' }) {
             rows.map((row, i) => (
               <tr key={row.id ?? i} className="hover:bg-gray-50 transition-colors">
                 {columns.map(col => (
-                  <td key={col.key} className={`px-4 py-3 whitespace-nowrap ${col.cellClassName || ''}`}>
+                  <td
+                    key={col.key}
+                    className={`px-4 py-3 whitespace-nowrap ${
+                      col.mobileHide ? 'hidden md:table-cell' : ''
+                    } ${col.cellClassName || ''}`}
+                  >
                     {col.render ? col.render(row) : row[col.key]}
                   </td>
                 ))}

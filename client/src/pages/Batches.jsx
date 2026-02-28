@@ -147,8 +147,8 @@ export default function Batches() {
         </div>
       )
     },
-    { key: 'unit_price_aud', label: 'Unit Price', render: r => `AUD ${fmt(r.unit_price_aud)}` },
-    { key: 'exchange_rate',  label: 'Rate',       render: r => `${fmt(r.exchange_rate, 4)}` },
+    { key: 'unit_price_aud', label: 'Unit Price', mobileHide: true, render: r => `AUD ${fmt(r.unit_price_aud)}` },
+    { key: 'exchange_rate',  label: 'Rate',        mobileHide: true, render: r => `${fmt(r.exchange_rate, 4)}` },
     { key: 'landed',         label: 'Landed/unit', render: r => (
         <span className="font-semibold text-blue-700">₱{fmt(r.landed_cost_per_unit_php)}</span>
       )
@@ -172,20 +172,20 @@ export default function Batches() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Purchase Batches</h1>
           <p className="text-sm text-gray-500 mt-1">Track inventory by purchase batch for FIFO costing</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3">
           <ExchangeRateDisplay onRate={setLiveRate} />
-          <button onClick={openAdd} className="btn-primary">+ Record Batch</button>
+          <button onClick={openAdd} className="btn-primary shrink-0">+ Record Batch</button>
         </div>
       </div>
 
       <div className="flex items-center gap-3">
         <select
-          className="input w-56"
+          className="input w-full sm:w-56"
           value={filterProduct}
           onChange={e => setFilterProduct(e.target.value)}
         >
@@ -205,7 +205,7 @@ export default function Batches() {
       {modal && (
         <Modal title={editing ? 'Edit Batch' : 'Record Purchase Batch'} onClose={closeModal} size="lg">
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField label="Product *">
                 <select
                   className="input"
@@ -226,7 +226,7 @@ export default function Batches() {
               </FormField>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <FormField label="Quantity *">
                 <input
                   type="number" min="1" className="input"
@@ -253,7 +253,7 @@ export default function Batches() {
               </FormField>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField label="Shipping Cost (AUD)" hint="Allocated proportionally across units">
                 <input
                   type="number" step="0.01" min="0" className="input"

@@ -42,9 +42,9 @@ export default function Inventory() {
   const totalValue = inventory.reduce((s, r) => s + r.inventory_value_php, 0);
 
   const columns = [
-    { key: 'sku',     label: 'SKU',     render: r => <span className="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded">{r.sku}</span> },
+    { key: 'sku',     label: 'SKU',     mobileHide: true, render: r => <span className="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded">{r.sku}</span> },
     { key: 'name',    label: 'Product', render: r => <span className="font-medium">{r.name}</span> },
-    { key: 'category',label: 'Category',render: r => r.category || <span className="text-gray-400">—</span> },
+    { key: 'category',label: 'Category',mobileHide: true, render: r => r.category || <span className="text-gray-400">—</span> },
     { key: 'stock',   label: 'Stock',   render: r => (
         <Badge
           label={`${r.stock_on_hand} ${r.unit}`}
@@ -52,12 +52,12 @@ export default function Inventory() {
         />
       )
     },
-    { key: 'avg_cost',label: 'Avg Landed Cost', render: r => (
+    { key: 'avg_cost',label: 'Avg Landed Cost', mobileHide: true, render: r => (
         r.stock_on_hand > 0 ? <span className="text-blue-700 font-medium">₱{fmt(r.avg_landed_cost_php)}</span>
           : <span className="text-gray-400">—</span>
       )
     },
-    { key: 'value',   label: 'Inventory Value', render: r => (
+    { key: 'value',   label: 'Value', render: r => (
         r.stock_on_hand > 0
           ? <span className="font-semibold text-gray-800">₱{fmt(r.inventory_value_php)}</span>
           : <span className="text-gray-400">—</span>
@@ -65,7 +65,7 @@ export default function Inventory() {
     },
     { key: 'actions', label: '', render: r => (
         r.stock_on_hand > 0
-          ? <button onClick={() => openDetail(r)} className="btn-secondary text-xs px-3 py-1">View Batches</button>
+          ? <button onClick={() => openDetail(r)} className="btn-secondary text-xs px-3 py-1">Batches</button>
           : null
       )
     },
@@ -74,20 +74,20 @@ export default function Inventory() {
   const batchColumns = [
     { key: 'purchase_date', label: 'Purchase Date' },
     { key: 'remaining_qty', label: 'Remaining',    render: r => `${r.remaining_qty} / ${r.quantity}` },
-    { key: 'unit_price_aud',label: 'Unit Price',   render: r => `AUD ${fmt(r.unit_price_aud)}` },
-    { key: 'exchange_rate', label: 'Rate',         render: r => fmt(r.exchange_rate, 4) },
+    { key: 'unit_price_aud',label: 'Unit Price',   mobileHide: true, render: r => `AUD ${fmt(r.unit_price_aud)}` },
+    { key: 'exchange_rate', label: 'Rate',         mobileHide: true, render: r => fmt(r.exchange_rate, 4) },
     { key: 'landed',        label: 'Landed/unit',  render: r => <span className="font-semibold text-blue-700">₱{fmt(r.landed_cost_per_unit_php)}</span> },
-    { key: 'rem_value',     label: 'Remaining Value', render: r => <span className="font-semibold">₱{fmt(r.remaining_value_php)}</span> },
+    { key: 'rem_value',     label: 'Rem. Value',   render: r => <span className="font-semibold">₱{fmt(r.remaining_value_php)}</span> },
   ];
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Inventory</h1>
           <p className="text-sm text-gray-500 mt-1">Current stock levels and landed cost averages</p>
         </div>
-        <div className="card text-right py-3 px-5">
+        <div className="card py-3 px-5 shrink-0">
           <p className="text-xs text-gray-500 uppercase font-semibold">Total Inventory Value</p>
           <p className="text-xl font-bold text-gray-900">₱{fmt(totalValue)}</p>
         </div>

@@ -3,12 +3,14 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 
+const authRouter = require('./routes/auth');
 const exchangeRateRouter = require('./routes/exchangeRate');
 const productsRouter = require('./routes/products');
 const batchesRouter = require('./routes/batches');
 const salesRouter = require('./routes/sales');
 const inventoryRouter = require('./routes/inventory');
 const reportsRouter = require('./routes/reports');
+const authMiddleware = require('./middleware/authMiddleware');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -19,6 +21,11 @@ const IS_PROD = process.env.NODE_ENV === 'production';
 if (!IS_PROD) app.use(cors());
 app.use(express.json());
 
+// Public routes — no auth required
+app.use('/api/auth', authRouter);
+
+// All other API routes require a valid JWT
+app.use('/api', authMiddleware);
 app.use('/api/exchange-rate', exchangeRateRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/batches', batchesRouter);
