@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ChangePasswordModal from './ChangePasswordModal.jsx';
 
 const links = [
   { to: '/dashboard',  label: 'Dashboard',  icon: '📊' },
@@ -13,6 +15,7 @@ const links = [
 export default function Sidebar({ onClose }) {
   const { user, logout } = useAuth();
   const isAdmin = user?.role === 'admin';
+  const [changingPassword, setChangingPassword] = useState(false);
 
   return (
     <aside className="w-56 h-full bg-gray-900 text-white flex flex-col">
@@ -98,12 +101,22 @@ export default function Sidebar({ onClose }) {
           </p>
         )}
         <button
+          onClick={() => { setChangingPassword(true); onClose?.(); }}
+          className="w-full text-left text-xs text-gray-400 hover:text-white transition-colors"
+        >
+          Change password
+        </button>
+        <button
           onClick={logout}
           className="w-full text-left text-xs text-gray-400 hover:text-white transition-colors"
         >
           Sign out
         </button>
       </div>
+
+      {changingPassword && (
+        <ChangePasswordModal onClose={() => setChangingPassword(false)} />
+      )}
     </aside>
   );
 }

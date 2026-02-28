@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const db = require('../db');
+const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -44,6 +45,26 @@ router.get('/me', (req, res) => {
   } catch {
     res.status(401).json({ error: 'Invalid or expired token' });
   }
+});
+
+// PUT /api/auth/password — change own password (requires valid token)
+router.put('/password', authMiddleware, (req, res) => {
+  const { current_password, new_password } = req.body;
+  if (!current_password || !new_password) {
+    return res.status(400).json({ error: 'Current password and new password are required' });
+  }
+  if (new_password.length < 6) {
+    return res.status(400).json({ error: 'New password must be at least 6 characters' });
+  }
+
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+  if (!user || !bcrypt.compareSync(current_password, user.password)) {
+    return res.status(401).json({ error: 'Current password is incorrect' });
+  }
+
+  const hash = bcrypt.hashSync(new_password, 10);
+  db.prepare('UPDATE users SET password = ? WHERE id = ?').run(hash, req.user.id);
+  res.json({ success: true });
 });
 
 module.exports = router;
