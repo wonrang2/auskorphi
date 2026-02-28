@@ -132,6 +132,88 @@ router.post('/', (req, res, next) => {
   }
 });
 
+// PUT /api/sales/:id — edit sale (reverses old FIFO allocations, re-runs with new values)
+router.put('/:id', (req, res, next) => {
+  const { product_id, sale_date, quantity_sold, sale_price_php, delivery_cost_php, notes } = req.body;
+
+  if (!product_id || !sale_date || !quantity_sold || !sale_price_php) {
+    return res.status(400).json({ error: 'product_id, sale_date, quantity_sold, sale_price_php are required' });
+  }
+  if (quantity_sold <= 0) return res.status(400).json({ error: 'quantity_sold must be positive' });
+
+  const editSale = db.transaction(() => {
+    const exists = db.prepare('SELECT id FROM sales WHERE id = ?').get(req.params.id);
+    if (!exists) { const e = new Error('Sale not found'); e.status = 404; throw e; }
+
+    // 1. Reverse existing FIFO allocations — restore stock to batches
+    const oldAllocs = db.prepare('SELECT * FROM sale_batch_allocations WHERE sale_id = ?').all(req.params.id);
+    for (const alloc of oldAllocs) {
+      db.prepare(`
+        UPDATE purchase_batches SET remaining_qty = remaining_qty + ?, updated_at = datetime('now')
+        WHERE id = ?
+      `).run(alloc.units_taken, alloc.batch_id);
+    }
+    db.prepare('DELETE FROM sale_batch_allocations WHERE sale_id = ?').run(req.params.id);
+
+    // 2. Check new stock availability (FIFO order)
+    const batches = db.prepare(`
+      SELECT * FROM purchase_batches
+      WHERE product_id = ? AND remaining_qty > 0
+      ORDER BY purchase_date ASC, id ASC
+    `).all(product_id);
+
+    const totalAvailable = batches.reduce((sum, b) => sum + b.remaining_qty, 0);
+    if (totalAvailable < quantity_sold) {
+      const err = new Error(`Insufficient stock. Available: ${totalAvailable}, Requested: ${quantity_sold}`);
+      err.status = 409;
+      throw err;
+    }
+
+    // 3. Update the sale record
+    db.prepare(`
+      UPDATE sales
+      SET product_id = ?, sale_date = ?, quantity_sold = ?, sale_price_php = ?,
+          delivery_cost_php = ?, notes = ?
+      WHERE id = ?
+    `).run(product_id, sale_date, quantity_sold, sale_price_php, delivery_cost_php || 0, notes || null, req.params.id);
+
+    // 4. Re-run FIFO allocations with new values
+    let remaining = quantity_sold;
+    for (const batch of batches) {
+      if (remaining <= 0) break;
+      const taken = Math.min(remaining, batch.remaining_qty);
+      const costPerUnit = landedCostPerUnit(batch);
+      db.prepare(`
+        UPDATE purchase_batches SET remaining_qty = remaining_qty - ?, updated_at = datetime('now')
+        WHERE id = ?
+      `).run(taken, batch.id);
+      db.prepare(`
+        INSERT INTO sale_batch_allocations (sale_id, batch_id, units_taken, landed_cost_per_unit_php)
+        VALUES (?, ?, ?, ?)
+      `).run(req.params.id, batch.id, taken, costPerUnit);
+      remaining -= taken;
+    }
+  });
+
+  try {
+    editSale();
+    const sale = db.prepare(`
+      SELECT s.*, p.name AS product_name, p.sku,
+        s.sale_price_php * s.quantity_sold AS revenue,
+        COALESCE(SUM(a.units_taken * a.landed_cost_per_unit_php), 0) AS cogs,
+        (s.sale_price_php * s.quantity_sold) - COALESCE(SUM(a.units_taken * a.landed_cost_per_unit_php), 0) AS gross_profit,
+        (s.sale_price_php * s.quantity_sold) - COALESCE(SUM(a.units_taken * a.landed_cost_per_unit_php), 0) - s.delivery_cost_php AS net_profit
+      FROM sales s
+      JOIN products p ON p.id = s.product_id
+      LEFT JOIN sale_batch_allocations a ON a.sale_id = s.id
+      WHERE s.id = ? GROUP BY s.id
+    `).get(req.params.id);
+    res.json(sale);
+  } catch (err) {
+    next(err);
+  }
+});
+
 // DELETE /api/sales/:id — void sale, restore stock
 router.delete('/:id', (req, res, next) => {
   const voidSale = db.transaction(() => {

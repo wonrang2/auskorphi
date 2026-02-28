@@ -25,6 +25,7 @@ export default function Sales() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [modal, setModal] = useState(false);
+  const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -56,15 +57,39 @@ export default function Sales() {
 
   useEffect(() => { load(); }, [load]);
 
-  const selectedProductStock = inventory.find(i => String(i.id) === String(form.product_id))?.stock_on_hand ?? null;
+  // When editing, add back the original quantity so stock check is accurate
+  const selectedProductStock = (() => {
+    const inv = inventory.find(i => String(i.id) === String(form.product_id));
+    if (inv == null) return null;
+    const base = inv.stock_on_hand;
+    if (editing && String(editing.product_id) === String(form.product_id)) {
+      return base + editing.quantity_sold;
+    }
+    return base;
+  })();
 
   function openAdd() {
     setForm({ ...emptyForm, sale_date: new Date().toISOString().slice(0, 10) });
     setFormError('');
+    setEditing(null);
     setModal(true);
   }
 
-  function closeModal() { setModal(false); }
+  function openEdit(sale) {
+    setForm({
+      product_id: String(sale.product_id),
+      sale_date: sale.sale_date,
+      quantity_sold: String(sale.quantity_sold),
+      sale_price_php: String(sale.sale_price_php),
+      delivery_cost_php: String(sale.delivery_cost_php || ''),
+      notes: sale.notes || '',
+    });
+    setFormError('');
+    setEditing(sale);
+    setModal(true);
+  }
+
+  function closeModal() { setModal(false); setEditing(null); }
 
   // Revenue/profit preview
   const preview = (() => {
@@ -97,7 +122,11 @@ export default function Sales() {
       notes: form.notes || null,
     };
     try {
-      await api.post('/sales', payload);
+      if (editing) {
+        await api.put(`/sales/${editing.id}`, payload);
+      } else {
+        await api.post('/sales', payload);
+      }
       closeModal();
       load();
     } catch (err) {
@@ -154,7 +183,10 @@ export default function Sales() {
       )
     },
     { key: 'actions', label: '', render: r => (
-        <button onClick={() => handleVoid(r)} className="btn-danger text-xs px-3 py-1">Void</button>
+        <div className="flex gap-2 justify-end">
+          <button onClick={() => openEdit(r)} className="btn-secondary text-xs px-3 py-1">Edit</button>
+          <button onClick={() => handleVoid(r)} className="btn-danger text-xs px-3 py-1">Void</button>
+        </div>
       )
     },
   ];
@@ -216,7 +248,7 @@ export default function Sales() {
       )}
 
       {modal && (
-        <Modal title="Record Sale" onClose={closeModal} size="lg">
+        <Modal title={editing ? 'Edit Sale' : 'Record Sale'} onClose={closeModal} size="lg">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField label="Product *">
@@ -308,7 +340,7 @@ export default function Sales() {
             <div className="flex justify-end gap-3 pt-2">
               <button type="button" onClick={closeModal} className="btn-secondary">Cancel</button>
               <button type="submit" disabled={saving} className="btn-primary">
-                {saving ? 'Recording...' : 'Record Sale'}
+                {saving ? 'Saving...' : editing ? 'Save Changes' : 'Record Sale'}
               </button>
             </div>
           </form>
